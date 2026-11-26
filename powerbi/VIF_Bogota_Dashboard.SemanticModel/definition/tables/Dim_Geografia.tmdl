@@ -1,0 +1,30 @@
+/// Localidad y UPZ de residencia de la víctima. Llave natural compuesta Localidad | UPZ.
+table Dim_Geografia
+	lineageTag: 1a31bb64-0dd7-4372-b554-db17ac8a7f9e
+
+	column Clave_Geo
+		dataType: string
+		isHidden
+		isKey
+		lineageTag: 053a11b3-5689-40c6-beec-2e93f89c7683
+		sourceColumn: Clave_Geo
+
+	column Localidad
+		dataType: string
+		lineageTag: ec69b684-0bbb-41b3-b124-6ea28b1c906c
+		sourceColumn: Localidad
+
+	column UPZ
+		dataType: string
+		lineageTag: 06e482cf-a103-49f7-9989-61285c20abd9
+		sourceColumn: UPZ
+
+	partition Dim_Geografia = m
+		mode: import
+		source =
+				let
+				    Geo = Table.Distinct(Table.SelectColumns(VIF_Limpia, {"Clave_Geo", "Localidad", "UPZ"})),
+				    Orden = Table.Sort(Geo, {{"Localidad", Order.Ascending}, {"UPZ", Order.Ascending}})
+				in
+				    Orden
+

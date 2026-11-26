@@ -1,0 +1,97 @@
+/// Ruta del CSV de origen (SIVIM). Cambiarla permite reproducir el ETL en otro equipo.
+expression pRutaCSV = "C:\ruta\a\datos\osb_saludmental-vintrafamiliar.csv" meta [IsParameterQuery = true, Type = "Text", IsParameterQueryRequired = true]
+	lineageTag: afa11738-9b0a-470b-a979-c3e153819982
+
+	annotation PBI_ResultType = Text
+
+/// Último año con datos completos. La fecha del dato es 2026-07-28, así que 2026 es parcial.
+expression pUltimoAnioCompleto = 2025 meta [IsParameterQuery = true, Type = "Number", IsParameterQueryRequired = true]
+	lineageTag: c1d2db88-9086-4e16-aa84-4f4948dc445a
+
+	annotation PBI_ResultType = Number
+
+/// Consulta de apoyo (carga deshabilitada): lectura cruda del CSV de SIVIM y tipos de dato.
+expression VIF_Origen =
+		let
+		    Origen = Csv.Document(File.Contents(pRutaCSV), [Delimiter = ";", Columns = 23, Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+		    Encabezados = Table.PromoteHeaders(Origen, [PromoteAllScalars = true]),
+		    Tipos = Table.TransformColumnTypes(Encabezados, {
+		        {"ano", Int64.Type}, {"grupoedad", type text}, {"sexo", type text}, {"NOMBRE_LOCALIDAD", type text},
+		        {"NOMBREUPZ", type text}, {"tipoaseguramiento", type text}, {"entidadadministradora", type text},
+		        {"relacion_agresor", type text}, {"orientacion_sexual", type text}, {"gestante", Int64.Type},
+		        {"estrato", type text}, {"pais_procedencia", type text}, {"ciclo_vital", type text},
+		        {"estado_civil", type text}, {"nivel_educativo", type text}, {"agresor_consumospa", Int64.Type},
+		        {"victima_consumospa", Int64.Type}, {"lugocurrenciaemocional", type text}, {"lugocurrenciafisica", type text},
+		        {"lugocurrenciasexual", type text}, {"lugocurrenciaeconomica", type text},
+		        {"lugocurrencianegligencia", type text}, {"lugocurrenciaabandono", type text}})
+		in
+		    Tipos
+	lineageTag: ce37538a-5b8a-4edc-86c2-db6f14921c08
+
+	annotation PBI_ResultType = Table
+
+/// Consulta de apoyo (carga deshabilitada): limpieza, normalización y llaves. Es la base de verdad única de hechos y dimensiones.
+expression VIF_Limpia =
+		let
+		    Fuente = VIF_Origen,
+		    // Llave sustituta del caso (la fuente no trae ID)
+		    ConID = Table.AddIndexColumn(Fuente, "ID_Caso", 1, 1, Int64.Type),
+		    // Se excluye la EPS (279 nombres inconsistentes)
+		    SinEntidad = Table.RemoveColumns(ConID, {"entidadadministradora"}),
+		    Renombrado = Table.RenameColumns(SinEntidad, {
+		        {"ano", "Año"}, {"grupoedad", "Grupo_Edad"}, {"sexo", "Sexo"}, {"NOMBRE_LOCALIDAD", "Localidad"},
+		        {"NOMBREUPZ", "UPZ"}, {"tipoaseguramiento", "Tipo_Aseguramiento"}, {"relacion_agresor", "Relacion_Agresor"},
+		        {"orientacion_sexual", "Orientacion_Sexual"}, {"gestante", "Gestante"}, {"estrato", "Estrato"},
+		        {"pais_procedencia", "Pais"}, {"ciclo_vital", "Ciclo_Vital"}, {"estado_civil", "Estado_Civil"},
+		        {"nivel_educativo", "Nivel_Educativo"}, {"agresor_consumospa", "Agresor_SPA"},
+		        {"victima_consumospa", "Victima_SPA"}, {"lugocurrenciaemocional", "Lugar_Emocional"},
+		        {"lugocurrenciafisica", "Lugar_Fisica"}, {"lugocurrenciasexual", "Lugar_Sexual"},
+		        {"lugocurrenciaeconomica", "Lugar_Economica"}, {"lugocurrencianegligencia", "Lugar_Negligencia"},
+		        {"lugocurrenciaabandono", "Lugar_Abandono"}}),
+		    // Lista explícita de columnas de texto (reproducible y auditable)
+		    ColsTexto = {"Grupo_Edad", "Sexo", "Localidad", "UPZ", "Tipo_Aseguramiento", "Relacion_Agresor",
+		        "Orientacion_Sexual", "Estrato", "Pais", "Ciclo_Vital", "Estado_Civil", "Nivel_Educativo",
+		        "Lugar_Emocional", "Lugar_Fisica", "Lugar_Sexual", "Lugar_Economica", "Lugar_Negligencia", "Lugar_Abandono"},
+		    // Recorte y limpieza de caracteres (los nulos pasan a texto vacío)
+		    Recortado = Table.TransformColumns(Renombrado, List.Transform(ColsTexto, (c) => {c, each if _ = null then "" else Text.Clean(Text.Trim(_)), type text})),
+		    // Vacíos y localidad desconocida -> "Sin dato"
+		    VaciosSinDato = Table.ReplaceValue(Recortado, "", "Sin dato", Replacer.ReplaceValue, ColsTexto),
+		    LocalidadDesconocida = Table.ReplaceValue(VaciosSinDato, "Localidad Desconocida", "Sin dato", Replacer.ReplaceValue, {"Localidad"}),
+		    // Etiquetas de edad inconsistentes
+		    Edad1 = Table.ReplaceValue(LocalidadDesconocida, "14 - 17 años", "De 14 - 17 años", Replacer.ReplaceValue, {"Grupo_Edad"}),
+		    Edad2 = Table.ReplaceValue(Edad1, "De 30 - 34 años", "De 27 - 44 años", Replacer.ReplaceValue, {"Grupo_Edad"}),
+		    // UPZ asignada a otra localidad: se conserva la localidad y la UPZ pasa a "Sin dato"
+		    UPZValidas = Table.SelectRows(Edad2, each [UPZ] <> "Sin dato"),
+		    ConteoUPZ = Table.Group(UPZValidas, {"UPZ", "Localidad"}, {{"n", each Table.RowCount(_), Int64.Type}}),
+		    LocalidadModal = Table.Group(ConteoUPZ, {"UPZ"}, {{"Localidad_Modal", each Table.Max(_, "n")[Localidad], type text}}),
+		    ConModal = Table.NestedJoin(Edad2, {"UPZ"}, LocalidadModal, {"UPZ"}, "M", JoinKind.LeftOuter),
+		    ExpModal = Table.ExpandTableColumn(ConModal, "M", {"Localidad_Modal"}),
+		    UPZCorregida = Table.ReplaceValue(ExpModal, each [UPZ],
+		        each if [UPZ] <> "Sin dato" and [Localidad_Modal] <> [Localidad] then "Sin dato" else [UPZ],
+		        Replacer.ReplaceValue, {"UPZ"}),
+		    SinModal = Table.RemoveColumns(UPZCorregida, {"Localidad_Modal"}),
+		    // "Mujer gestante" no es una relación con el agresor
+		    Relacion = Table.ReplaceValue(SinModal, "Mujer gestante", "Sin dato", Replacer.ReplaceValue, {"Relacion_Agresor"}),
+		    // Gestante incoherente con el sexo
+		    Gestante = Table.ReplaceValue(Relacion, each [Gestante], each if [Sexo] = "Hombres" then 0 else [Gestante], Replacer.ReplaceValue, {"Gestante"}),
+		    // Nacionalidad agrupada
+		    Nacionalidad = Table.AddColumn(Gestante, "Nacionalidad", each
+		        if [Pais] = "COLOMBIA" then "Colombiana"
+		        else if Text.StartsWith([Pais], "VENEZUELA") then "Venezolana"
+		        else if [Pais] = "Sin dato" then "Sin dato"
+		        else "Otra", type text),
+		    SinPais = Table.RemoveColumns(Nacionalidad, {"Pais"}),
+		    // Número de tipos de violencia por caso
+		    NTipos = Table.AddColumn(SinPais, "N_Tipos", each List.Count(List.Select(
+		        {[Lugar_Emocional], [Lugar_Fisica], [Lugar_Sexual], [Lugar_Economica], [Lugar_Negligencia], [Lugar_Abandono]},
+		        each _ <> "Sin dato")), Int64.Type),
+		    // Llaves naturales compuestas para las dimensiones de varias columnas
+		    ClaveGeo = Table.AddColumn(NTipos, "Clave_Geo", each [Localidad] & " | " & [UPZ], type text),
+		    ClavePerfil = Table.AddColumn(ClaveGeo, "Clave_Perfil", each Text.Combine(
+		        {[Orientacion_Sexual], [Estrato], [Estado_Civil], [Nivel_Educativo], [Nacionalidad]}, " | "), type text)
+		in
+		    ClavePerfil
+	lineageTag: 92bd9642-1847-47eb-8b4f-c0b066518a6e
+
+	annotation PBI_ResultType = Table
+

@@ -1,0 +1,60 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/page/2.1.0/schema.json",
+  "name": "DetalleLocalidad",
+  "displayName": "Detalle localidad",
+  "displayOption": "FitToPage",
+  "height": 720,
+  "width": 1280,
+  "filterConfig": {
+    "filters": [
+      {
+        "name": "fDrillLocalidad",
+        "field": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Dim_Geografia"
+              }
+            },
+            "Property": "Localidad"
+          }
+        },
+        "type": "Categorical",
+        "howCreated": "Drillthrough"
+      }
+    ]
+  },
+  "pageBinding": {
+    "name": "pbDrillLocalidad",
+    "type": "Drillthrough",
+    "parameters": [
+      {
+        "name": "prmLocalidad",
+        "boundFilter": "fDrillLocalidad",
+        "fieldExpr": {
+          "Column": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Dim_Geografia"
+              }
+            },
+            "Property": "Localidad"
+          }
+        }
+      }
+    ]
+  },
+  "visibility": "HiddenInViewMode",
+  "visualInteractions": [
+    {
+      "source": "p3Serie",
+      "target": "p3Upz",
+      "type": "DataFilter"
+    },
+    {
+      "source": "p3Upz",
+      "target": "p3Serie",
+      "type": "DataFilter"
+    }
+  ]
+}

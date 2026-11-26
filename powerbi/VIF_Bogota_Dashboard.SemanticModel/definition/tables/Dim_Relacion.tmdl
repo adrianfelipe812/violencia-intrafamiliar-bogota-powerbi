@@ -1,0 +1,45 @@
+/// Relación de la víctima con el agresor, agrupada y con bandera de vínculo familiar.
+table Dim_Relacion
+	lineageTag: 7f2e1d58-5896-4a67-ba9b-2a1ed15ae1d5
+
+	column Relacion_Agresor
+		dataType: string
+		isKey
+		lineageTag: 529f3649-4b58-4e3d-b7d8-6a98e1180c28
+		sourceColumn: Relacion_Agresor
+
+	column Grupo_Relacion
+		dataType: string
+		lineageTag: 1152ff09-07e8-4291-858b-e23215bae635
+		sourceColumn: Grupo_Relacion
+
+	column Es_Familiar
+		dataType: int64
+		lineageTag: 41554d8c-7e34-470c-9726-36f967022c95
+		summarizeBy: none
+		sourceColumn: Es_Familiar
+
+	partition Dim_Relacion = m
+		mode: import
+		source =
+				let
+				    Mapa = #table(type table [Relacion_Agresor = text, Grupo_Relacion = text, Es_Familiar = Int64.Type], {
+				        {"Madre", "Padres y cuidadores", 1}, {"Padre", "Padres y cuidadores", 1},
+				        {"Padrastro", "Padres y cuidadores", 1}, {"Madrastra", "Padres y cuidadores", 1},
+				        {"Abuelo(a)", "Otros familiares", 1}, {"Hermano(a)", "Otros familiares", 1},
+				        {"Hijo(a)", "Otros familiares", 1}, {"Otro familiar", "Otros familiares", 1},
+				        {"Pareja", "Pareja o expareja", 1}, {"Expareja", "Pareja o expareja", 1},
+				        {"Estudiantes", "Comunidad educativa", 0}, {"Docentes", "Comunidad educativa", 0},
+				        {"Administrativos", "Comunidad educativa", 0},
+				        {"Conocido", "Conocidos y otros", 0}, {"Amigo(a)", "Conocidos y otros", 0}, {"Vecino", "Conocidos y otros", 0},
+				        {"Jefe", "Conocidos y otros", 0}, {"Compañero(a) de trabajo", "Conocidos y otros", 0},
+				        {"Servidor Público", "Conocidos y otros", 0}, {"Sacerdote", "Conocidos y otros", 0},
+				        {"Desconocido", "Desconocido", 0}, {"Sin dato", "Sin dato", 0}}),
+				    Valores = Table.Distinct(Table.SelectColumns(VIF_Limpia, {"Relacion_Agresor"})),
+				    Union = Table.NestedJoin(Valores, {"Relacion_Agresor"}, Mapa, {"Relacion_Agresor"}, "M", JoinKind.LeftOuter),
+				    Exp = Table.ExpandTableColumn(Union, "M", {"Grupo_Relacion", "Es_Familiar"}),
+				    SinNulos = Table.ReplaceValue(Table.ReplaceValue(Exp, null, "Sin clasificar", Replacer.ReplaceValue, {"Grupo_Relacion"}), null, 0, Replacer.ReplaceValue, {"Es_Familiar"}),
+				    Tipos = Table.TransformColumnTypes(SinNulos, {{"Grupo_Relacion", type text}, {"Es_Familiar", Int64.Type}})
+				in
+				    Tipos
+

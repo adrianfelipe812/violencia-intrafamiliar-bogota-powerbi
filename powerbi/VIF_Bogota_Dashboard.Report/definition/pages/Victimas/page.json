@@ -1,0 +1,60 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/page/2.1.0/schema.json",
+  "name": "Victimas",
+  "displayName": "2 · Víctimas y violencias",
+  "displayOption": "FitToPage",
+  "height": 720,
+  "width": 1280,
+  "visualInteractions": [
+    {
+      "source": "p2Edad",
+      "target": "p2Tipo",
+      "type": "DataFilter"
+    },
+    {
+      "source": "p2Edad",
+      "target": "p2Kpi1",
+      "type": "DataFilter"
+    },
+    {
+      "source": "p2Edad",
+      "target": "p2Kpi2",
+      "type": "DataFilter"
+    },
+    {
+      "source": "p2Edad",
+      "target": "p2Kpi3",
+      "type": "DataFilter"
+    },
+    {
+      "source": "p2Edad",
+      "target": "p2Kpi4",
+      "type": "DataFilter"
+    },
+    {
+      "source": "p2Tipo",
+      "target": "p2Edad",
+      "type": "NoFilter"
+    },
+    {
+      "source": "p2Tipo",
+      "target": "p2Kpi1",
+      "type": "NoFilter"
+    },
+    {
+      "source": "p2Tipo",
+      "target": "p2Kpi2",
+      "type": "NoFilter"
+    },
+    {
+      "source": "p2Tipo",
+      "target": "p2Kpi3",
+      "type": "NoFilter"
+    },
+    {
+      "source": "p2Tipo",
+      "target": "p2Kpi4",
+      "type": "NoFilter"
+    }
+  ]
+}

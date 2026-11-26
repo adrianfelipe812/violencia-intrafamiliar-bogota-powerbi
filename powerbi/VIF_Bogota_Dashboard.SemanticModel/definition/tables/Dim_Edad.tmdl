@@ -1,0 +1,37 @@
+/// Grupos de edad de la víctima con orden y rango menor/mayor de edad.
+table Dim_Edad
+	lineageTag: d520f0e6-1de6-4f71-8f8a-155a35e7dc7b
+
+	column Grupo_Edad
+		dataType: string
+		isKey
+		lineageTag: 9daf3b40-dfc0-446f-8ff5-63c0e37450df
+		sourceColumn: Grupo_Edad
+		sortByColumn: Orden_Edad
+
+	column Orden_Edad
+		dataType: int64
+		isHidden
+		lineageTag: 5f3b825f-2fb2-4445-b13e-a72b0a728201
+		summarizeBy: none
+		sourceColumn: Orden_Edad
+
+	column Rango_Edad
+		dataType: string
+		lineageTag: 317d6f7e-85b0-453b-a398-5982340b7dfa
+		sourceColumn: Rango_Edad
+
+	partition Dim_Edad = m
+		mode: import
+		source =
+				let
+				    Tabla = #table(type table [Grupo_Edad = text, Orden_Edad = Int64.Type, Rango_Edad = text], {
+				        {"Menor 1 año", 1, "Menor de 18 años"}, {"De 1 - 5 años", 2, "Menor de 18 años"},
+				        {"De 6 - 13 años", 3, "Menor de 18 años"}, {"De 14 - 17 años", 4, "Menor de 18 años"},
+				        {"De 18 - 26 años", 5, "18 años o más"}, {"De 27 - 44 años", 6, "18 años o más"},
+				        {"De 45 - 59 años", 7, "18 años o más"}, {"De 60 - 69 años", 8, "18 años o más"},
+				        {"De 70 - 79 años", 9, "18 años o más"}, {"De 80 - 99 años", 10, "18 años o más"},
+				        {"De 100 - 105 años", 11, "18 años o más"}})
+				in
+				    Tabla
+

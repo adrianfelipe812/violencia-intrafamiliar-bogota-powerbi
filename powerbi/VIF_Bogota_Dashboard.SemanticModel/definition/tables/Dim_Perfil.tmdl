@@ -1,0 +1,44 @@
+/// Atributos socioeconómicos de la víctima (orientación, estrato, estado civil, nivel educativo, nacionalidad). Llave natural compuesta.
+table Dim_Perfil
+	lineageTag: ad781298-2c85-42af-8e60-8d7fc6b827d4
+
+	column Clave_Perfil
+		dataType: string
+		isHidden
+		isKey
+		lineageTag: d299d92a-7900-4d2c-b8ec-99d9ed3de150
+		sourceColumn: Clave_Perfil
+
+	column Orientacion_Sexual
+		dataType: string
+		lineageTag: 22fef91a-8342-4490-b13a-77e55833ca4a
+		sourceColumn: Orientacion_Sexual
+
+	column Estrato
+		dataType: string
+		lineageTag: 912db268-00ba-4c3a-8491-270019184e32
+		sourceColumn: Estrato
+
+	column Estado_Civil
+		dataType: string
+		lineageTag: 97370deb-60b5-4612-8dbc-331c80ada623
+		sourceColumn: Estado_Civil
+
+	column Nivel_Educativo
+		dataType: string
+		lineageTag: acdff4ef-981f-4d8c-9fc0-80589997950d
+		sourceColumn: Nivel_Educativo
+
+	column Nacionalidad
+		dataType: string
+		lineageTag: 46076426-ea21-42c6-a7bc-d9841de6cca7
+		sourceColumn: Nacionalidad
+
+	partition Dim_Perfil = m
+		mode: import
+		source =
+				let
+				    Perfil = Table.Distinct(Table.SelectColumns(VIF_Limpia, {"Clave_Perfil", "Orientacion_Sexual", "Estrato", "Estado_Civil", "Nivel_Educativo", "Nacionalidad"}))
+				in
+				    Perfil
+

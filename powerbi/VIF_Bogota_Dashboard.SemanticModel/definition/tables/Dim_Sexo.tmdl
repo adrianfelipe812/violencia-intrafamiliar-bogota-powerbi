@@ -1,0 +1,18 @@
+/// Sexo de la víctima.
+table Dim_Sexo
+	lineageTag: eb599513-e3c0-4940-b086-3a31fa3363c7
+
+	column Sexo
+		dataType: string
+		isKey
+		lineageTag: d177bc56-fe7b-4669-a183-ed24390d9b46
+		sourceColumn: Sexo
+
+	partition Dim_Sexo = m
+		mode: import
+		source =
+				let
+				    Sexo = Table.Distinct(Table.SelectColumns(VIF_Limpia, {"Sexo"}))
+				in
+				    Sexo
+

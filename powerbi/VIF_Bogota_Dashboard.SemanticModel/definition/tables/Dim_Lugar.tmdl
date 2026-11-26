@@ -1,0 +1,19 @@
+/// Lugar de ocurrencia de cada tipo de violencia.
+table Dim_Lugar
+	lineageTag: 5f09fe74-c302-4de3-8711-b222d038a947
+
+	column Lugar
+		dataType: string
+		isKey
+		lineageTag: a017b005-c8e2-4d99-9398-68b9af5aa986
+		sourceColumn: Lugar
+
+	partition Dim_Lugar = m
+		mode: import
+		source =
+				let
+				    Lugar = Table.Distinct(Table.SelectColumns(Hechos_TipoViolencia, {"Lugar"})),
+				    Orden = Table.Sort(Lugar, {{"Lugar", Order.Ascending}})
+				in
+				    Orden
+

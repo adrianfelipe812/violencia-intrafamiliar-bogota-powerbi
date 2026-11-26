@@ -1,0 +1,30 @@
+model Model
+	culture: es-ES
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	discourageImplicitMeasures
+	sourceQueryCulture: es-MX
+	valueFilterBehavior: independent
+	dataAccessOptions
+		legacyRedirects
+		returnErrorValuesAsNull
+
+annotation __PBI_TimeIntelligenceEnabled = 0
+
+annotation PBI_ProTooling = ["MCP-PBIModeling","DevMode"]
+
+ref table Dim_Anio
+ref table Dim_Geografia
+ref table Dim_Edad
+ref table Dim_Sexo
+ref table Dim_CicloVital
+ref table Dim_Relacion
+ref table Dim_Aseguramiento
+ref table Dim_Perfil
+ref table Dim_TipoViolencia
+ref table Hechos_Casos
+ref table Hechos_TipoViolencia
+ref table Dim_Lugar
+ref table _Medidas
+
+ref cultureInfo es-ES
+

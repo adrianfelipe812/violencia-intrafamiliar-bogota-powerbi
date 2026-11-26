@@ -1,0 +1,27 @@
+/// Los seis tipos de violencia registrados por SIVIM.
+table Dim_TipoViolencia
+	lineageTag: ee8d9712-e3ca-4ad4-ad1c-e69bbc2b8d3b
+
+	column Tipo_Violencia
+		dataType: string
+		isKey
+		lineageTag: 04ba360e-74a6-4602-b437-0e4fa6975f44
+		sourceColumn: Tipo_Violencia
+		sortByColumn: Orden_Tipo
+
+	column Orden_Tipo
+		dataType: int64
+		isHidden
+		lineageTag: 24d4fd72-5f57-4941-82df-5ce603cb3108
+		summarizeBy: none
+		sourceColumn: Orden_Tipo
+
+	partition Dim_TipoViolencia = m
+		mode: import
+		source =
+				let
+				    Tabla = #table(type table [Tipo_Violencia = text, Orden_Tipo = Int64.Type], {
+				        {"Emocional", 1}, {"Física", 2}, {"Sexual", 3}, {"Negligencia", 4}, {"Económica", 5}, {"Abandono", 6}})
+				in
+				    Tabla
+

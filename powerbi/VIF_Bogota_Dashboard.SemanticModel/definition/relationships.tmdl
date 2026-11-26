@@ -1,0 +1,72 @@
+relationship Hechos_Casos_Año_Dim_Anio_Año
+	fromColumn: Hechos_Casos.Año
+	toColumn: Dim_Anio.Año
+
+relationship Hechos_Casos_Clave_Geo_Dim_Geografia_Clave_Geo
+	fromColumn: Hechos_Casos.Clave_Geo
+	toColumn: Dim_Geografia.Clave_Geo
+
+relationship Hechos_Casos_Grupo_Edad_Dim_Edad_Grupo_Edad
+	fromColumn: Hechos_Casos.Grupo_Edad
+	toColumn: Dim_Edad.Grupo_Edad
+
+relationship Hechos_Casos_Sexo_Dim_Sexo_Sexo
+	fromColumn: Hechos_Casos.Sexo
+	toColumn: Dim_Sexo.Sexo
+
+relationship Hechos_Casos_Ciclo_Vital_Dim_CicloVital_Ciclo_Vital
+	fromColumn: Hechos_Casos.Ciclo_Vital
+	toColumn: Dim_CicloVital.Ciclo_Vital
+
+relationship Hechos_Casos_Relacion_Agresor_Dim_Relacion_Relacion_Agresor
+	fromColumn: Hechos_Casos.Relacion_Agresor
+	toColumn: Dim_Relacion.Relacion_Agresor
+
+relationship Hechos_Casos_Tipo_Aseguramiento_Dim_Aseguramiento_Tipo_Aseguramiento
+	fromColumn: Hechos_Casos.Tipo_Aseguramiento
+	toColumn: Dim_Aseguramiento.Tipo_Aseguramiento
+
+relationship Hechos_Casos_Clave_Perfil_Dim_Perfil_Clave_Perfil
+	fromColumn: Hechos_Casos.Clave_Perfil
+	toColumn: Dim_Perfil.Clave_Perfil
+
+relationship Hechos_TipoViolencia_Año_Dim_Anio_Año
+	fromColumn: Hechos_TipoViolencia.Año
+	toColumn: Dim_Anio.Año
+
+relationship Hechos_TipoViolencia_Clave_Geo_Dim_Geografia_Clave_Geo
+	fromColumn: Hechos_TipoViolencia.Clave_Geo
+	toColumn: Dim_Geografia.Clave_Geo
+
+relationship Hechos_TipoViolencia_Grupo_Edad_Dim_Edad_Grupo_Edad
+	fromColumn: Hechos_TipoViolencia.Grupo_Edad
+	toColumn: Dim_Edad.Grupo_Edad
+
+relationship Hechos_TipoViolencia_Sexo_Dim_Sexo_Sexo
+	fromColumn: Hechos_TipoViolencia.Sexo
+	toColumn: Dim_Sexo.Sexo
+
+relationship Hechos_TipoViolencia_Ciclo_Vital_Dim_CicloVital_Ciclo_Vital
+	fromColumn: Hechos_TipoViolencia.Ciclo_Vital
+	toColumn: Dim_CicloVital.Ciclo_Vital
+
+relationship Hechos_TipoViolencia_Relacion_Agresor_Dim_Relacion_Relacion_Agresor
+	fromColumn: Hechos_TipoViolencia.Relacion_Agresor
+	toColumn: Dim_Relacion.Relacion_Agresor
+
+relationship Hechos_TipoViolencia_Tipo_Aseguramiento_Dim_Aseguramiento_Tipo_Aseguramiento
+	fromColumn: Hechos_TipoViolencia.Tipo_Aseguramiento
+	toColumn: Dim_Aseguramiento.Tipo_Aseguramiento
+
+relationship Hechos_TipoViolencia_Clave_Perfil_Dim_Perfil_Clave_Perfil
+	fromColumn: Hechos_TipoViolencia.Clave_Perfil
+	toColumn: Dim_Perfil.Clave_Perfil
+
+relationship Hechos_TipoViolencia_Tipo_Violencia_Dim_TipoViolencia_Tipo_Violencia
+	fromColumn: Hechos_TipoViolencia.Tipo_Violencia
+	toColumn: Dim_TipoViolencia.Tipo_Violencia
+
+relationship Hechos_TipoViolencia_Lugar_Dim_Lugar_Lugar
+	fromColumn: Hechos_TipoViolencia.Lugar
+	toColumn: Dim_Lugar.Lugar
+

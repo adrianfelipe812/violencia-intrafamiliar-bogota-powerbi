@@ -1,0 +1,475 @@
+/// Tabla contenedora de todas las medidas explícitas del modelo. No tiene datos.
+table _Medidas
+	lineageTag: c6521f74-1cce-45fa-9572-4cc56933026c
+
+	/// Número de casos notificados (víctimas). Cuenta filas de Hechos_Casos: un caso = una fila.
+	measure 'Total Casos' = COUNTROWS ( Hechos_Casos )
+		formatString: #,0
+		displayFolder: 1. Base
+		lineageTag: 0823defe-88db-4cd1-b604-51fe2a173c42
+
+	/// Número de hechos de violencia (caso × tipo). Un caso con dos tipos cuenta dos veces. No usar para contar víctimas.
+	measure 'Total Hechos de Violencia' = COUNTROWS ( Hechos_TipoViolencia )
+		formatString: #,0
+		displayFolder: 1. Base
+		lineageTag: b73c0069-dad8-4780-88f0-270b8b83589f
+
+	/// Promedio de tipos de violencia que sufre cada víctima (polivictimización).
+	measure 'Tipos por Caso' = DIVIDE ( [Total Hechos de Violencia], [Total Casos] )
+		formatString: 0.00
+		displayFolder: 1. Base
+		lineageTag: 6259f2ae-35bc-47ed-9b71-bcd8f6763115
+
+	/// Proporción de casos cuya víctima es mujer.
+	measure '% Víctimas Mujeres' =
+			DIVIDE (
+			    CALCULATE ( [Total Casos], Dim_Sexo[Sexo] = "Mujeres" ),
+			    [Total Casos]
+			)
+		formatString: 0.0%
+		displayFolder: 2. Perfil
+		lineageTag: 680cb4ac-71f3-4775-bf13-920631048113
+
+	/// Proporción de casos con víctima menor de 18 años.
+	measure '% Víctimas Menores de 18' =
+			DIVIDE (
+			    CALCULATE ( [Total Casos], Dim_Edad[Rango_Edad] = "Menor de 18 años" ),
+			    [Total Casos]
+			)
+		formatString: 0.0%
+		displayFolder: 2. Perfil
+		lineageTag: 851706f0-0517-4cf3-9a8b-da98066c689a
+
+	/// Proporción de casos cuyo agresor es familiar (padres, cuidadores, pareja, expareja u otro familiar). Denominador: todos los casos, incluidos los Sin dato (criterio conservador).
+	measure '% Agresor Familiar' =
+			DIVIDE (
+			    CALCULATE ( [Total Casos], Dim_Relacion[Es_Familiar] = 1 ),
+			    [Total Casos]
+			)
+		formatString: 0.0%
+		displayFolder: 2. Perfil
+		lineageTag: f4355070-a740-4091-b60b-6af452744931
+
+	/// Proporción de casos en que el agresor consumió sustancias psicoactivas.
+	measure '% Agresor con Consumo SPA' = DIVIDE ( SUM ( Hechos_Casos[Agresor_SPA] ), [Total Casos] )
+		formatString: 0.0%
+		displayFolder: 2. Perfil
+		lineageTag: 7223e4b3-9330-40e3-812d-18a2a0fdcd6d
+
+	/// Proporción de víctimas mujeres que estaban en gestación.
+	measure '% Gestantes entre Mujeres' =
+			DIVIDE (
+			    SUM ( Hechos_Casos[Gestante] ),
+			    CALCULATE ( [Total Casos], Dim_Sexo[Sexo] = "Mujeres" )
+			)
+		formatString: 0.0%
+		displayFolder: 2. Perfil
+		lineageTag: 93cdd3e7-384b-437f-9622-1320cb89e575
+
+	/// Año seleccionado si hay uno solo; si no, el último año completo dentro de la selección (evita usar 2026 parcial por defecto).
+	measure 'Año Referencia' =
+			VAR _UnAnio =
+			    IF ( HASONEVALUE ( Dim_Anio[Año] ), VALUES ( Dim_Anio[Año] ) )
+			VAR _UltimoCompleto =
+			    CALCULATE ( MAX ( Dim_Anio[Año] ), KEEPFILTERS ( Dim_Anio[Es_Anio_Completo] = 1 ) )
+			RETURN
+			    COALESCE ( _UnAnio, _UltimoCompleto )
+		formatString: 0
+		displayFolder: 3. Tiempo
+		lineageTag: d7ea9f49-7bca-411f-861e-a0afc0dd8a65
+
+	/// Casos del año de referencia, respetando el resto de filtros.
+	measure 'Casos Año Referencia' =
+			VAR _Anio = [Año Referencia]
+			RETURN
+			    CALCULATE ( [Total Casos], REMOVEFILTERS ( Dim_Anio ), Dim_Anio[Año] = _Anio )
+		formatString: #,0
+		displayFolder: 3. Tiempo
+		lineageTag: f60809ce-bfb8-40ec-b796-8928b8f34eec
+
+	/// Casos del año anterior al año de referencia.
+	measure 'Casos Año Anterior' =
+			VAR _Anio = [Año Referencia]
+			RETURN
+			    CALCULATE ( [Total Casos], REMOVEFILTERS ( Dim_Anio ), Dim_Anio[Año] = _Anio - 1 )
+		formatString: #,0
+		displayFolder: 3. Tiempo
+		lineageTag: 195ccc8a-bebf-4d7c-bdd3-397625190c66
+
+	/// Cambio porcentual frente al año anterior. Devuelve BLANK si el año de referencia es parcial (2026), para no comparar medio año contra un año completo.
+	measure 'Variación % Interanual' =
+			VAR _Anio = [Año Referencia]
+			VAR _EsCompleto =
+			    CALCULATE ( MAX ( Dim_Anio[Es_Anio_Completo] ), REMOVEFILTERS ( Dim_Anio ), Dim_Anio[Año] = _Anio )
+			VAR _Actual = [Casos Año Referencia]
+			VAR _Previo = [Casos Año Anterior]
+			RETURN
+			    IF ( _EsCompleto = 1, DIVIDE ( _Actual - _Previo, _Previo ) )
+		formatString: +0.0%;-0.0%;0.0%
+		displayFolder: 3. Tiempo
+		lineageTag: 89b95d12-5efd-4c35-a5b0-ebb6b85c6b50
+
+	/// Promedio de casos por año en los años completos (2013-2025), respetando los demás filtros. Iterador AVERAGEX.
+	measure 'Promedio Anual 2013-2025' =
+			AVERAGEX (
+			    FILTER (
+			        ALL ( Dim_Anio ),
+			        Dim_Anio[Es_Anio_Completo] = 1
+			    ),
+			    [Total Casos]
+			)
+		formatString: #,0
+		displayFolder: 3. Tiempo
+		lineageTag: 117a208a-f361-4a1c-986b-51c504fa0dda
+
+	/// Cuánto se aparta el año de referencia del promedio histórico 2013-2025. BLANK si el año es parcial.
+	measure 'Variación % vs Promedio' =
+			VAR _Anio = [Año Referencia]
+			VAR _EsCompleto =
+			    CALCULATE ( MAX ( Dim_Anio[Es_Anio_Completo] ), REMOVEFILTERS ( Dim_Anio ), Dim_Anio[Año] = _Anio )
+			VAR _Promedio = [Promedio Anual 2013-2025]
+			RETURN
+			    IF ( _EsCompleto = 1, DIVIDE ( [Casos Año Referencia] - _Promedio, _Promedio ) )
+		formatString: +0.0%;-0.0%;0.0%
+		displayFolder: 3. Tiempo
+		lineageTag: 9b50dcc5-c427-4208-956d-ba721547a29f
+
+	/// Participación de cada elemento del gráfico sobre el total de lo que el usuario está viendo (respeta segmentadores con ALLSELECTED).
+	measure '% del Total Visible' = DIVIDE ( [Total Casos], CALCULATE ( [Total Casos], ALLSELECTED () ) )
+		formatString: 0.0%
+		displayFolder: 4. Participación y ranking
+		lineageTag: 6a60f7e0-edb2-4c9e-81a7-81f4df1abaf4
+
+	/// Participación sobre el total de la ciudad en el mismo periodo: ignora el filtro geográfico pero respeta los demás.
+	measure '% del Total Bogotá' = DIVIDE ( [Total Casos], CALCULATE ( [Total Casos], REMOVEFILTERS ( Dim_Geografia ) ) )
+		formatString: 0.0%
+		displayFolder: 4. Participación y ranking
+		lineageTag: c8290d1b-320d-4e63-af2d-d9cb6db152ba
+
+	/// Posición de la localidad por número de casos dentro de la selección actual (1 = más casos).
+	measure 'Ranking Localidad' =
+			IF (
+			    HASONEVALUE ( Dim_Geografia[Localidad] ),
+			    RANKX ( ALLSELECTED ( Dim_Geografia[Localidad] ), [Total Casos], , DESC, DENSE )
+			)
+		formatString: 0
+		displayFolder: 4. Participación y ranking
+		lineageTag: a6af4294-f170-4fe1-86b0-08be07a236ce
+
+	/// En el contexto de un tipo de violencia: proporción de víctimas que sufrieron ese tipo. Los porcentajes no suman 100 % porque un caso puede tener varios tipos.
+	measure '% de Casos con este Tipo' = DIVIDE ( [Total Hechos de Violencia], [Total Casos] )
+		formatString: 0.0%
+		displayFolder: 5. Tipo y lugar
+		lineageTag: a72bfe6c-3bd9-4955-b03f-901d65876887
+
+	/// Víctimas con al menos un hecho de violencia sexual.
+	measure 'Casos con Violencia Sexual' = CALCULATE ( [Total Hechos de Violencia], Dim_TipoViolencia[Tipo_Violencia] = "Sexual" )
+		formatString: #,0
+		displayFolder: 5. Tipo y lugar
+		lineageTag: b26cc0c8-73b2-422c-966c-23f104f06ec4
+
+	/// Víctimas con al menos un hecho de violencia física.
+	measure 'Casos con Violencia Física' = CALCULATE ( [Total Hechos de Violencia], Dim_TipoViolencia[Tipo_Violencia] = "Física" )
+		formatString: #,0
+		displayFolder: 5. Tipo y lugar
+		lineageTag: 912135b2-e3ec-4aa7-b4d3-f573119f3cea
+
+	/// Proporción de hechos de violencia que ocurrieron en la vivienda.
+	measure '% Hechos en la Vivienda' =
+			DIVIDE (
+			    CALCULATE ( [Total Hechos de Violencia], Dim_Lugar[Lugar] = "Vivienda" ),
+			    [Total Hechos de Violencia]
+			)
+		formatString: 0.0%
+		displayFolder: 5. Tipo y lugar
+		lineageTag: 1a56d190-14cf-4a5f-86c5-95b14f655cb2
+
+	/// Color para formato condicional: rojo si los casos suben, gris si bajan o no hay comparación.
+	measure 'Color Variación' =
+			VAR _V = [Variación % Interanual]
+			RETURN
+			    SWITCH ( TRUE (), ISBLANK ( _V ), "#9CA3AF", _V > 0, "#B91C1C", "#6B7280" )
+		displayFolder: 6. Formato
+		lineageTag: 5814cb44-b903-4d23-a215-dafb34137470
+
+	/// Color para formato condicional: acento en las tres localidades con más casos, gris en el resto (atributo preatentivo).
+	measure 'Color Top 3 Localidades' = IF ( [Ranking Localidad] <= 3, "#B91C1C", "#BDBDBD" )
+		displayFolder: 6. Formato
+		lineageTag: cb15d453-64e3-4d73-a71a-0d06d087e8a8
+
+	/// Color para formato condicional en la serie anual: acento en el año de referencia, gris claro en 2026 parcial y gris medio en el resto.
+	measure 'Color Año Referencia' =
+			VAR _AnioFila = SELECTEDVALUE ( Dim_Anio[Año] )
+			VAR _AnioRef =
+			    CALCULATE ( MAX ( Dim_Anio[Año] ), ALLSELECTED ( Dim_Anio ), Dim_Anio[Es_Anio_Completo] = 1 )
+			VAR _Completo = SELECTEDVALUE ( Dim_Anio[Es_Anio_Completo] )
+			RETURN
+			    SWITCH ( TRUE (), _AnioFila = _AnioRef, "#B91C1C", _Completo = 0, "#E5E7EB", "#BDBDBD" )
+		displayFolder: 6. Formato
+		lineageTag: cde8c1d4-75bb-450a-a794-c32852132acc
+
+	/// Acento en los grupos de agresor con vínculo familiar, gris en el resto.
+	measure 'Color Relación Familiar' = IF ( MAX ( Dim_Relacion[Es_Familiar] ) = 1, "#B91C1C", "#BDBDBD" )
+		displayFolder: 6. Formato
+		lineageTag: 45d3f7ec-a6e2-4210-ba33-2551f755dc83
+
+	/// La violencia emocional (casi universal) va en gris claro como contexto; los demás tipos en gris medio, con acento en el tipo más frecuente después de la emocional.
+	measure 'Color Tipo Violencia' =
+			VAR _Tipo = SELECTEDVALUE ( Dim_TipoViolencia[Tipo_Violencia] )
+			VAR _Max =
+			    MAXX (
+			        FILTER ( ALL ( Dim_TipoViolencia ), Dim_TipoViolencia[Tipo_Violencia] <> "Emocional" ),
+			        [Total Hechos de Violencia]
+			    )
+			RETURN
+			    SWITCH ( TRUE (), _Tipo = "Emocional", "#E5E7EB", [Total Hechos de Violencia] = _Max, "#B91C1C", "#BDBDBD" )
+		displayFolder: 6. Formato
+		lineageTag: 7e11f473-d3fb-4953-9d86-1afe6ed7e0b3
+
+	/// Texto dinámico para el título de la tarjeta de casos.
+	measure 'Título Casos Año' =
+			VAR _Anio = [Año Referencia]
+			VAR _EsCompleto =
+			    CALCULATE ( MAX ( Dim_Anio[Es_Anio_Completo] ), REMOVEFILTERS ( Dim_Anio ), Dim_Anio[Año] = _Anio )
+			RETURN
+			    "CASOS EN " & _Anio & IF ( _EsCompleto = 0, " (PARCIAL)" )
+		displayFolder: 6. Formato
+		lineageTag: c5509e67-9175-45f4-9fec-919468df41dd
+
+	/// Título dinámico de la página de detalle (drill-through).
+	measure 'Título Detalle Localidad' = "Detalle de " & SELECTEDVALUE ( Dim_Geografia[Localidad], "todas las localidades" ) & ": " & FORMAT ( [Total Casos], "#,0" ) & " casos (" & FORMAT ( [% del Total Bogotá], "0.0%" ) & " de Bogotá)"
+		displayFolder: 6. Formato
+		lineageTag: 3b75c1ed-7642-4a56-b723-8c50f5b2c1f9
+
+	/// Color para formato condicional de la tarjeta vs promedio: rojo si el año supera el promedio histórico, gris si no.
+	measure 'Color vs Promedio' =
+			VAR _V = [Variación % vs Promedio]
+			RETURN
+			    SWITCH ( TRUE (), ISBLANK ( _V ), "#9CA3AF", _V > 0, "#B91C1C", "#6B7280" )
+		displayFolder: 6. Formato
+		lineageTag: 3f1c2a7e-5b8d-4e21-9c6f-1a2b3c4d5e6f
+
+	/// Orden natural del grupo de edad (de menor a mayor), para ordenar ejes de forma explícita.
+	measure 'Posicion Edad' = MIN ( Dim_Edad[Orden_Edad] )
+		formatString: 0
+		displayFolder: 6. Formato
+		lineageTag: 7a2e9d41-0c3b-4f58-a1d6-2b9e8f7c6d5a
+
+	/// Casos con víctima mujer (para comparar con hombres en el mismo eje).
+	measure 'Casos Mujeres' = CALCULATE ( [Total Casos], Dim_Sexo[Sexo] = "Mujeres" )
+		formatString: #,0
+		displayFolder: 2. Perfil
+		lineageTag: 1b7c3e52-9d4a-4c86-b0e1-5f2a8d9c7e31
+
+	/// Casos con víctima hombre (para comparar con mujeres en el mismo eje).
+	measure 'Casos Hombres' = CALCULATE ( [Total Casos], Dim_Sexo[Sexo] = "Hombres" )
+		formatString: #,0
+		displayFolder: 2. Perfil
+		lineageTag: 2c8d4f63-0e5b-4d97-c1f2-6a3b9e0d8f42
+
+	/// Año de referencia como texto; con asterisco si es parcial.
+	measure 'Etiqueta Año Ref' =
+			VAR _Anio = [Año Referencia]
+			VAR _EsCompleto =
+			    CALCULATE ( MAX ( Dim_Anio[Es_Anio_Completo] ), REMOVEFILTERS ( Dim_Anio ), Dim_Anio[Año] = _Anio )
+			RETURN
+			    _Anio & IF ( _EsCompleto = 0, "*" )
+		displayFolder: 6. Formato
+		lineageTag: a4e163dd-2a8b-4aa3-88fa-037d978cf9f6
+
+	/// Subtítulo dinámico con el periodo seleccionado en el filtro de Año.
+	measure 'Texto Periodo' =
+			VAR _Min = MIN ( Dim_Anio[Año] )
+			VAR _Max = MAX ( Dim_Anio[Año] )
+			VAR _HayParcial = MIN ( Dim_Anio[Es_Anio_Completo] ) = 0
+			RETURN
+			    "Periodo seleccionado: " & IF ( _Min = _Max, _Min, _Min & "–" & _Max )
+			        & IF ( _HayParcial, " (2026* solo primer semestre)" )
+		displayFolder: 6. Formato
+		lineageTag: e4be801a-1093-47b9-97a9-39776dda7d26
+
+	/// % de víctimas menores de 18 en el año de referencia.
+	measure '% Menores de 18 Año Ref' =
+			VAR _Anio = [Año Referencia]
+			RETURN
+			    CALCULATE ( [% Víctimas Menores de 18], REMOVEFILTERS ( Dim_Anio ), Dim_Anio[Año] = _Anio )
+		formatString: 0.0%
+		displayFolder: 3. Tiempo
+		lineageTag: 45990185-30ef-4f0d-9f83-39624d1c4dab
+
+	/// % de agresores familiares en el año de referencia.
+	measure '% Agresor Familiar Año Ref' =
+			VAR _Anio = [Año Referencia]
+			RETURN
+			    CALCULATE ( [% Agresor Familiar], REMOVEFILTERS ( Dim_Anio ), Dim_Anio[Año] = _Anio )
+		formatString: 0.0%
+		displayFolder: 3. Tiempo
+		lineageTag: 9dea1fea-5366-400e-9fc3-1a49e5742858
+
+	/// % de víctimas mujeres en el año de referencia.
+	measure '% Mujeres Año Ref' =
+			VAR _Anio = [Año Referencia]
+			RETURN
+			    CALCULATE ( [% Víctimas Mujeres], REMOVEFILTERS ( Dim_Anio ), Dim_Anio[Año] = _Anio )
+		formatString: 0.0%
+		displayFolder: 3. Tiempo
+		lineageTag: cbbee31f-3611-4918-8a61-d184923aee8e
+
+	/// Tipos de violencia por víctima en el año de referencia.
+	measure 'Tipos por Caso Año Ref' =
+			VAR _Anio = [Año Referencia]
+			RETURN
+			    CALCULATE ( [Tipos por Caso], REMOVEFILTERS ( Dim_Anio ), Dim_Anio[Año] = _Anio )
+		formatString: 0.00
+		displayFolder: 3. Tiempo
+		lineageTag: 279af3ca-2821-4363-a5ba-62faa213327f
+
+	/// Víctimas de violencia sexual en el año de referencia.
+	measure 'Violencia Sexual Año Ref' =
+			VAR _Anio = [Año Referencia]
+			RETURN
+			    CALCULATE ( [Casos con Violencia Sexual], REMOVEFILTERS ( Dim_Anio ), Dim_Anio[Año] = _Anio )
+		formatString: #,0
+		displayFolder: 3. Tiempo
+		lineageTag: 13610661-cfc0-4614-a289-f5776b41978e
+
+	/// % de hechos ocurridos en la vivienda en el año de referencia.
+	measure '% Vivienda Año Ref' =
+			VAR _Anio = [Año Referencia]
+			RETURN
+			    CALCULATE ( [% Hechos en la Vivienda], REMOVEFILTERS ( Dim_Anio ), Dim_Anio[Año] = _Anio )
+		formatString: 0.0%
+		displayFolder: 3. Tiempo
+		lineageTag: 84e0dfa9-c976-4144-b86d-fb0eb5633609
+
+	/// Título dinámico de tarjeta.
+	measure 'Título KPI Variación' = [Etiqueta Año Ref] & " VS. PROMEDIO 2013–2025"
+		displayFolder: 6. Formato
+		lineageTag: 354a6302-92b8-4cad-ae7d-2a65c6ff1757
+
+	/// Título dinámico de tarjeta.
+	measure 'Título KPI Menores' = "VÍCTIMAS MENORES DE 18 · " & [Etiqueta Año Ref]
+		displayFolder: 6. Formato
+		lineageTag: faeb89ab-6742-445c-a1cb-668b4e84b633
+
+	/// Título dinámico de tarjeta.
+	measure 'Título KPI Familiar' = "AGRESOR CON VÍNCULO FAMILIAR · " & [Etiqueta Año Ref]
+		displayFolder: 6. Formato
+		lineageTag: 90377ba4-6351-4a0f-9cd2-df6eb60184a8
+
+	/// Título dinámico de tarjeta.
+	measure 'Título KPI Mujeres' = "VÍCTIMAS MUJERES · " & [Etiqueta Año Ref]
+		displayFolder: 6. Formato
+		lineageTag: 965c441d-1a60-4add-9571-a57bf4ad81eb
+
+	/// Título dinámico de tarjeta.
+	measure 'Título KPI Tipos' = "TIPOS DE VIOLENCIA POR VÍCTIMA · " & [Etiqueta Año Ref]
+		displayFolder: 6. Formato
+		lineageTag: 1d4ee9b0-7953-42cc-b15f-736c37756eff
+
+	/// Título dinámico de tarjeta.
+	measure 'Título KPI Sexual' = "VÍCTIMAS DE VIOLENCIA SEXUAL · " & [Etiqueta Año Ref]
+		displayFolder: 6. Formato
+		lineageTag: 9ee3d99b-afd6-4f7f-ab6e-e881315f1a87
+
+	/// Título dinámico de tarjeta.
+	measure 'Título KPI Vivienda' = "HECHOS EN LA VIVIENDA · " & [Etiqueta Año Ref]
+		displayFolder: 6. Formato
+		lineageTag: 21dbc559-c5fb-46f2-b2ff-e2aea260d33b
+
+	/// Título dinámico de la serie anual: siempre verdadero con cualquier filtro.
+	measure 'Título Serie' =
+			VAR _Var = [Variación % vs Promedio]
+			VAR _Base = "En " & [Etiqueta Año Ref] & " se notificaron " & FORMAT ( [Casos Año Referencia], "#,0" ) & " casos"
+			RETURN
+			    IF (
+			        ISBLANK ( _Var ),
+			        _Base & " (año parcial: no se compara con el promedio)",
+			        _Base & ": " & FORMAT ( _Var, "+0%;-0%;0%" ) & IF ( _Var >= 0, " por encima", " por debajo" ) & " del promedio 2013–2025"
+			    )
+		displayFolder: 6. Formato
+		lineageTag: afa163d0-e458-45c3-83cf-9880b7f9ab82
+
+	/// Título dinámico: las tres localidades con más casos y su participación.
+	measure 'Título Localidades' =
+			VAR _T =
+			    ADDCOLUMNS (
+			        FILTER ( ALLSELECTED ( Dim_Geografia[Localidad] ), Dim_Geografia[Localidad] <> "Sin dato" ),
+			        "@c", [Total Casos]
+			    )
+			VAR _Top3 = TOPN ( 3, _T, [@c], DESC )
+			VAR _Top2 = TOPN ( 2, _T, [@c], DESC )
+			VAR _Primeras = CONCATENATEX ( _Top2, Dim_Geografia[Localidad], ", ", [@c], DESC )
+			VAR _Tercera =
+			    MAXX (
+			        EXCEPT (
+			            SELECTCOLUMNS ( _Top3, "L", Dim_Geografia[Localidad] ),
+			            SELECTCOLUMNS ( _Top2, "L", Dim_Geografia[Localidad] )
+			        ),
+			        [L]
+			    )
+			VAR _Share = DIVIDE ( SUMX ( _Top3, [@c] ), SUMX ( _T, [@c] ) )
+			RETURN
+			    IF (
+			        COUNTROWS ( _T ) < 3,
+			        "Casos por localidad de residencia",
+			        _Primeras & " y " & _Tercera & " concentran el " & FORMAT ( _Share, "0%" ) & " de los casos"
+			    )
+		displayFolder: 6. Formato
+		lineageTag: 5c9ce503-60ab-47f5-a8c1-758173c33dee
+
+	/// Título dinámico: % de agresores con vínculo familiar.
+	measure 'Título Relación' = FORMAT ( [% Agresor Familiar], "0%" ) & " de los agresores son de la propia familia: padres, cuidadores, pareja o expareja"
+		displayFolder: 6. Formato
+		lineageTag: 6f0d7828-ae3e-40ce-89ca-2ec7859afc17
+
+	/// Título dinámico de la pirámide: % de mujeres en la niñez frente a 18-44 años.
+	measure 'Título Edad' =
+			VAR _Ninez = CALCULATE ( [% Víctimas Mujeres], Dim_Edad[Grupo_Edad] IN { "Menor 1 año", "De 1 - 5 años", "De 6 - 13 años" } )
+			VAR _Adultas = CALCULATE ( [% Víctimas Mujeres], Dim_Edad[Grupo_Edad] IN { "De 18 - 26 años", "De 27 - 44 años" } )
+			RETURN
+			    "Hasta los 13 años, " & FORMAT ( _Ninez, "0%" ) & " de las víctimas son niñas; de 18 a 44 años, "
+			        & FORMAT ( _Adultas, "0%" ) & " son mujeres"
+		displayFolder: 6. Formato
+		lineageTag: e2b6541a-9573-449a-99ec-5882ff698c18
+
+	/// Título dinámico: tipo más frecuente después de la violencia emocional.
+	measure 'Título Tipos' =
+			VAR _T =
+			    ADDCOLUMNS (
+			        FILTER ( ALLSELECTED ( Dim_TipoViolencia[Tipo_Violencia] ), Dim_TipoViolencia[Tipo_Violencia] <> "Emocional" ),
+			        "@p", [% de Casos con este Tipo]
+			    )
+			VAR _Top = TOPN ( 1, _T, [@p], DESC )
+			RETURN
+			    "Tras la emocional, la violencia más frecuente es la "
+			        & LOWER ( MAXX ( _Top, Dim_TipoViolencia[Tipo_Violencia] ) ) & " ("
+			        & FORMAT ( MAXX ( _Top, [@p] ), "0%" ) & " de las víctimas)"
+		displayFolder: 6. Formato
+		lineageTag: 3f50622a-f269-43b5-b723-4b73e7c673ad
+
+	/// Casos de hombres en negativo para dibujar la pirámide; el formato muestra el valor positivo.
+	measure 'Casos Hombres Pirámide' = - [Casos Hombres]
+		formatString: #,0;#,0
+		displayFolder: 2. Perfil
+		lineageTag: c302db3c-6256-4314-9c42-ae8976b06c67
+
+	/// Subtítulo del gráfico de localidades: periodo y advertencia de que son conteos sin ajustar por población.
+	measure 'Subtítulo Localidades' = [Texto Periodo] & ". Conteos, no tasas: indican volumen, no riesgo."
+		displayFolder: 6. Formato
+		lineageTag: 9e6e2167-bf03-4480-98c2-2a1e7e8667c2
+
+	column Columna
+		dataType: string
+		isHidden
+		lineageTag: 9426b329-003a-41ff-a726-a568e6b0ebb1
+		sourceColumn: Columna
+
+	partition _Medidas = m
+		mode: import
+		source =
+				let
+				    Tabla = #table(type table [Columna = text], {})
+				in
+				    Tabla
+

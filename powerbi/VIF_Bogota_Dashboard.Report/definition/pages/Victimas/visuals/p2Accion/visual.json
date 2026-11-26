@@ -1,0 +1,201 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.4.0/schema.json",
+  "name": "p2Accion",
+  "position": {
+    "x": 664,
+    "y": 498,
+    "z": 23,
+    "height": 196,
+    "width": 592,
+    "tabOrder": 23
+  },
+  "visual": {
+    "visualType": "textbox",
+    "objects": {
+      "general": [
+        {
+          "properties": {
+            "paragraphs": [
+              {
+                "textRuns": [
+                  {
+                    "value": "¿Dónde actuar? Propuesta para 2027",
+                    "textStyle": {
+                      "fontSize": "12pt",
+                      "color": "#B91C1C",
+                      "fontFamily": "Segoe UI Semibold",
+                      "fontWeight": "bold"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "En 2025, el 77 % de los agresores fue un familiar y el 79 % de los hechos ocurrió en la vivienda.",
+                    "textStyle": {
+                      "fontSize": "9pt",
+                      "color": "#1F2430",
+                      "fontFamily": "Segoe UI"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "1. Hogar · Integración Social y SDS: ",
+                    "textStyle": {
+                      "fontSize": "9pt",
+                      "color": "#1F2430",
+                      "fontFamily": "Segoe UI",
+                      "fontWeight": "bold"
+                    }
+                  },
+                  {
+                    "value": "piloto de 6 meses de acompañamiento a familias con niñas y niños notificados; meta: seguimiento a todos los casos de menores en las UPZ piloto.",
+                    "textStyle": {
+                      "fontSize": "9pt",
+                      "color": "#1F2430",
+                      "fontFamily": "Segoe UI"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "2. Escuela · Secretaría de Educación: ",
+                    "textStyle": {
+                      "fontSize": "9pt",
+                      "color": "#1F2430",
+                      "fontFamily": "Segoe UI",
+                      "fontWeight": "bold"
+                    }
+                  },
+                  {
+                    "value": "activar la ruta de violencia sexual en los colegios, donde ocurrió el 29 % de la violencia sexual de 2025; plazo: año escolar 2027.",
+                    "textStyle": {
+                      "fontSize": "9pt",
+                      "color": "#1F2430",
+                      "fontFamily": "Segoe UI"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "3. Mujeres de 18 a 44 años · Secretaría de la Mujer: ",
+                    "textStyle": {
+                      "fontSize": "9pt",
+                      "color": "#1F2430",
+                      "fontFamily": "Segoe UI",
+                      "fontWeight": "bold"
+                    }
+                  },
+                  {
+                    "value": "son casi 9 de cada 10 víctimas de esa edad; meta: contacto y seguimiento de cada caso notificado en los 30 días siguientes.",
+                    "textStyle": {
+                      "fontSize": "9pt",
+                      "color": "#1F2430",
+                      "fontFamily": "Segoe UI"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "4. Territorio · SDS: ",
+                    "textStyle": {
+                      "fontSize": "9pt",
+                      "color": "#1F2430",
+                      "fontFamily": "Segoe UI",
+                      "fontWeight": "bold"
+                    }
+                  },
+                  {
+                    "value": "calcular tasas con las proyecciones del DANE antes de priorizar por riesgo; hoy Ciudad Bolívar, Bosa y Kennedy concentran casi 4 de cada 10 casos por volumen.",
+                    "textStyle": {
+                      "fontSize": "9pt",
+                      "color": "#1F2430",
+                      "fontFamily": "Segoe UI"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "visualContainerObjects": {
+      "background": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "border": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "dropShadow": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "subTitle": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

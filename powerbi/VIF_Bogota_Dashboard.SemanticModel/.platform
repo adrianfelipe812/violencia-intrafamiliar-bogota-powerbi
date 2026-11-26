@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "SemanticModel",
+    "displayName": "VIF_Bogota_Dashboard"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "dbf646d5-bb57-4728-acfc-516912a32e93"
+  }
+}

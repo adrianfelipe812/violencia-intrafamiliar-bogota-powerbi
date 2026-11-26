@@ -1,0 +1,41 @@
+/// Dimensión de tiempo a grano anual (la fuente solo trae el año). Marca 2026 como año parcial.
+table Dim_Anio
+	lineageTag: 45af1272-62db-4eeb-b9d2-86ee3f6104a3
+
+	column Año
+		dataType: int64
+		formatString: 0
+		lineageTag: 9b5b5fc3-3ad8-4770-9c19-f95670f1dff9
+		summarizeBy: none
+		sourceColumn: Año
+
+	column Periodo
+		dataType: string
+		lineageTag: fcedb75c-5b59-469f-a043-71f6d21e26c8
+		sourceColumn: Periodo
+
+	column Es_Anio_Completo
+		dataType: int64
+		isHidden
+		lineageTag: 1a9a3b07-e360-4c59-bafc-47a31399a150
+		summarizeBy: none
+		sourceColumn: Es_Anio_Completo
+
+	column Año_Etiqueta
+		dataType: string
+		lineageTag: f029186c-57f8-4d03-8d30-2f269725032c
+		sourceColumn: Año_Etiqueta
+		sortByColumn: Año
+
+	partition Dim_Anio = m
+		mode: import
+		source =
+				let
+				    Anios = Table.Distinct(Table.SelectColumns(VIF_Limpia, {"Año"})),
+				    Orden = Table.Sort(Anios, {{"Año", Order.Ascending}}),
+				    Periodo = Table.AddColumn(Orden, "Periodo", each if [Año] <= pUltimoAnioCompleto then "Año completo" else "Parcial (1.er semestre)", type text),
+				    Completo = Table.AddColumn(Periodo, "Es_Anio_Completo", each if [Año] <= pUltimoAnioCompleto then 1 else 0, Int64.Type),
+				    Etiqueta = Table.AddColumn(Completo, "Año_Etiqueta", each if [Año] <= pUltimoAnioCompleto then Text.From([Año]) else Text.From([Año]) & "*", type text)
+				in
+				    Etiqueta
+

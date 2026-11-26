@@ -1,0 +1,18 @@
+/// Régimen de seguridad social de la víctima.
+table Dim_Aseguramiento
+	lineageTag: f09f8ee1-9359-422a-adb0-6561a7599860
+
+	column Tipo_Aseguramiento
+		dataType: string
+		isKey
+		lineageTag: 7bd58c1d-67ea-4563-8c77-b8c2c006deb4
+		sourceColumn: Tipo_Aseguramiento
+
+	partition Dim_Aseguramiento = m
+		mode: import
+		source =
+				let
+				    Aseg = Table.Distinct(Table.SelectColumns(VIF_Limpia, {"Tipo_Aseguramiento"}))
+				in
+				    Aseg
+

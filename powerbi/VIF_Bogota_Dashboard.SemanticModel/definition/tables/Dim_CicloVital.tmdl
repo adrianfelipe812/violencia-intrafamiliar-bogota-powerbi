@@ -1,0 +1,27 @@
+/// Ciclo vital de la víctima, ordenado de primera infancia a vejez.
+table Dim_CicloVital
+	lineageTag: 87ce1dd5-006b-4779-87eb-27c4142c4106
+
+	column Ciclo_Vital
+		dataType: string
+		isKey
+		lineageTag: f54517ed-75a6-4c1f-bd87-7830205a3f0b
+		sourceColumn: Ciclo_Vital
+		sortByColumn: Orden_Ciclo
+
+	column Orden_Ciclo
+		dataType: int64
+		isHidden
+		lineageTag: e0ee20a5-33f8-474c-88ee-c58706580c26
+		summarizeBy: none
+		sourceColumn: Orden_Ciclo
+
+	partition Dim_CicloVital = m
+		mode: import
+		source =
+				let
+				    Tabla = #table(type table [Ciclo_Vital = text, Orden_Ciclo = Int64.Type], {
+				        {"Primera Infancia", 1}, {"Infancia", 2}, {"Adolescencia", 3}, {"Juventud", 4}, {"Adultez", 5}, {"Vejez", 6}})
+				in
+				    Tabla
+

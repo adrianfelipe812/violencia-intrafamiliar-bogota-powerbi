@@ -1,0 +1,98 @@
+/// Tabla de hechos principal: una fila por caso notificado de violencia intrafamiliar y de género (SIVIM).
+table Hechos_Casos
+	lineageTag: 38e9824d-e5ec-497f-8d92-8fd60cad44f5
+
+	column ID_Caso
+		dataType: int64
+		isHidden
+		lineageTag: a1e67dbe-67e2-4cfb-9da4-0e6adb18429b
+		summarizeBy: none
+		sourceColumn: ID_Caso
+
+	column Año
+		dataType: int64
+		isHidden
+		lineageTag: 1421eee7-ba52-4188-ae76-c3ff0b8809db
+		summarizeBy: none
+		sourceColumn: Año
+
+	column Clave_Geo
+		dataType: string
+		isHidden
+		lineageTag: 2e2ab49e-760b-45dd-9d52-5e2da77093db
+		sourceColumn: Clave_Geo
+
+	column Grupo_Edad
+		dataType: string
+		isHidden
+		lineageTag: b0583b54-14a7-40d6-82a1-84750f05c156
+		sourceColumn: Grupo_Edad
+
+	column Sexo
+		dataType: string
+		isHidden
+		lineageTag: 9461219a-1191-4f97-9a9a-4c70f599959c
+		sourceColumn: Sexo
+
+	column Ciclo_Vital
+		dataType: string
+		isHidden
+		lineageTag: 5b852589-2ce6-406a-88e3-efaf8e089736
+		sourceColumn: Ciclo_Vital
+
+	column Relacion_Agresor
+		dataType: string
+		isHidden
+		lineageTag: 976bdbbc-f30b-4392-99aa-c7fc5d2cee10
+		sourceColumn: Relacion_Agresor
+
+	column Tipo_Aseguramiento
+		dataType: string
+		isHidden
+		lineageTag: eedd7259-fc4c-4610-b0a9-d8d2ce87a01e
+		sourceColumn: Tipo_Aseguramiento
+
+	column Clave_Perfil
+		dataType: string
+		isHidden
+		lineageTag: c147071a-feea-46a1-98c7-91904e4517dc
+		sourceColumn: Clave_Perfil
+
+	column Gestante
+		dataType: int64
+		isHidden
+		lineageTag: 87b25b8c-db8e-42ee-9262-e28b12cf3006
+		summarizeBy: none
+		sourceColumn: Gestante
+
+	column Agresor_SPA
+		dataType: int64
+		isHidden
+		lineageTag: 7648d2a7-224a-4a9b-9bbf-ed8b50265ef8
+		summarizeBy: none
+		sourceColumn: Agresor_SPA
+
+	column Victima_SPA
+		dataType: int64
+		isHidden
+		lineageTag: 7ef3062f-3282-487b-80b3-da5c3ec984aa
+		summarizeBy: none
+		sourceColumn: Victima_SPA
+
+	column N_Tipos
+		dataType: int64
+		isHidden
+		lineageTag: e6ae2721-c0ec-4fd4-a21d-113b8e0dc0d1
+		summarizeBy: none
+		sourceColumn: N_Tipos
+
+	partition Hechos_Casos = m
+		mode: import
+		source =
+				let
+				    Fuente = VIF_Limpia,
+				    Columnas = Table.SelectColumns(Fuente, {"ID_Caso", "Año", "Clave_Geo", "Grupo_Edad", "Sexo", "Ciclo_Vital",
+				        "Relacion_Agresor", "Tipo_Aseguramiento", "Clave_Perfil", "Gestante", "Agresor_SPA", "Victima_SPA", "N_Tipos"})
+				in
+				    Columnas
+

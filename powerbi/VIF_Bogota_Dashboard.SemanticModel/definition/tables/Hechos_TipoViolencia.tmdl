@@ -1,0 +1,91 @@
+/// Tabla de hechos secundaria: una fila por caso y tipo de violencia ocurrido, con su lugar de ocurrencia.
+table Hechos_TipoViolencia
+	lineageTag: b5658b39-de33-475f-8cef-366524d406db
+
+	column ID_Caso
+		dataType: int64
+		isHidden
+		lineageTag: cc1ee57e-d06d-475e-bfd8-efe3f4d93f86
+		summarizeBy: none
+		sourceColumn: ID_Caso
+
+	column Año
+		dataType: int64
+		isHidden
+		lineageTag: ccf52945-fda9-40a2-abda-89b7b73879e8
+		summarizeBy: none
+		sourceColumn: Año
+
+	column Clave_Geo
+		dataType: string
+		isHidden
+		lineageTag: 4b066c1d-f783-4bd4-ad79-43aa0da3a55e
+		sourceColumn: Clave_Geo
+
+	column Grupo_Edad
+		dataType: string
+		isHidden
+		lineageTag: 6b8109d7-d0d1-450c-8797-988db932c5a1
+		sourceColumn: Grupo_Edad
+
+	column Sexo
+		dataType: string
+		isHidden
+		lineageTag: b32cae17-8611-46fd-9b22-5c4c44bd5c50
+		sourceColumn: Sexo
+
+	column Ciclo_Vital
+		dataType: string
+		isHidden
+		lineageTag: 1771b08e-4cb7-4480-b2fe-4a2785dbfaa3
+		sourceColumn: Ciclo_Vital
+
+	column Relacion_Agresor
+		dataType: string
+		isHidden
+		lineageTag: 77d12ffb-44ea-44bf-8094-e826898a5f72
+		sourceColumn: Relacion_Agresor
+
+	column Tipo_Aseguramiento
+		dataType: string
+		isHidden
+		lineageTag: cab9d07e-ba51-459e-a5b8-369aca084b9e
+		sourceColumn: Tipo_Aseguramiento
+
+	column Clave_Perfil
+		dataType: string
+		isHidden
+		lineageTag: b7be4b9c-9cd3-4567-9aa2-3948b3b5caad
+		sourceColumn: Clave_Perfil
+
+	column Lugar
+		dataType: string
+		isHidden
+		lineageTag: 128416d8-6996-463a-b90d-25ab45a4058f
+		sourceColumn: Lugar
+
+	column Tipo_Violencia
+		dataType: string
+		isHidden
+		lineageTag: fadcde3a-04a6-4bda-9f01-b79fa7979054
+		sourceColumn: Tipo_Violencia
+
+	partition Hechos_TipoViolencia = m
+		mode: import
+		source =
+				let
+				    Fuente = VIF_Limpia,
+				    Columnas = Table.SelectColumns(Fuente, {"ID_Caso", "Año", "Clave_Geo", "Grupo_Edad", "Sexo", "Ciclo_Vital",
+				        "Relacion_Agresor", "Tipo_Aseguramiento", "Clave_Perfil", "Lugar_Emocional", "Lugar_Fisica", "Lugar_Sexual",
+				        "Lugar_Economica", "Lugar_Negligencia", "Lugar_Abandono"}),
+				    Despivotado = Table.Unpivot(Columnas, {"Lugar_Emocional", "Lugar_Fisica", "Lugar_Sexual", "Lugar_Economica",
+				        "Lugar_Negligencia", "Lugar_Abandono"}, "Columna", "Lugar"),
+				    // "Sin dato" en la columna de lugar = ese tipo de violencia no ocurrió en el caso
+				    SoloOcurridos = Table.SelectRows(Despivotado, each [Lugar] <> "Sin dato"),
+				    Tipo = Table.AddColumn(SoloOcurridos, "Tipo_Violencia", each Record.Field(
+				        [Lugar_Emocional = "Emocional", Lugar_Fisica = "Física", Lugar_Sexual = "Sexual",
+				         Lugar_Economica = "Económica", Lugar_Negligencia = "Negligencia", Lugar_Abandono = "Abandono"], [Columna]), type text),
+				    Final = Table.RemoveColumns(Tipo, {"Columna"})
+				in
+				    Final
+

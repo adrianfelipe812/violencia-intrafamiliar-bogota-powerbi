@@ -1,0 +1,109 @@
+{
+  "name": "VIF Bogotá - gris + un acento",
+  "dataColors": [
+    "#9CA3AF",
+    "#B91C1C",
+    "#6B7280",
+    "#D1D5DB",
+    "#4B5563",
+    "#E5E7EB",
+    "#7F1D1D",
+    "#374151"
+  ],
+  "background": "#FFFFFF",
+  "foreground": "#1F2430",
+  "tableAccent": "#B91C1C",
+  "good": "#6B7280",
+  "neutral": "#9CA3AF",
+  "bad": "#B91C1C",
+  "maximum": "#B91C1C",
+  "center": "#E5E7EB",
+  "minimum": "#FFFFFF",
+  "textClasses": {
+    "callout": {
+      "fontFace": "Segoe UI Semibold",
+      "fontSize": 30,
+      "color": "#1F2430"
+    },
+    "title": {
+      "fontFace": "Segoe UI Semibold",
+      "fontSize": 12,
+      "color": "#1F2430"
+    },
+    "header": {
+      "fontFace": "Segoe UI Semibold",
+      "fontSize": 11,
+      "color": "#1F2430"
+    },
+    "label": {
+      "fontFace": "Segoe UI",
+      "fontSize": 9,
+      "color": "#6B7280"
+    }
+  },
+  "visualStyles": {
+    "*": {
+      "*": {
+        "border": [
+          {
+            "show": false
+          }
+        ],
+        "background": [
+          {
+            "show": false
+          }
+        ],
+        "dropShadow": [
+          {
+            "show": false
+          }
+        ],
+        "title": [
+          {
+            "alignment": "left",
+            "fontSize": 12,
+            "fontColor": {
+              "solid": {
+                "color": "#1F2430"
+              }
+            }
+          }
+        ],
+        "valueAxis": [
+          {
+            "gridlineShow": false
+          }
+        ],
+        "categoryAxis": [
+          {
+            "gridlineShow": false
+          }
+        ]
+      }
+    },
+    "page": {
+      "*": {
+        "background": [
+          {
+            "color": {
+              "solid": {
+                "color": "#FFFFFF"
+              }
+            },
+            "transparency": 0
+          }
+        ],
+        "outspace": [
+          {
+            "color": {
+              "solid": {
+                "color": "#FFFFFF"
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}
