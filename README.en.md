@@ -46,6 +46,10 @@ These are **reported cases, not rates**. Without population by district there is
 
 Adrian Felipe Grateron Ramirez, Jhonatan Smith Doncel and Jorge Emmanuel Marin. Final project for the Data Visualization course, MSc in Data Science, Universidad Santo Tomás (2026).
 
+## License
+
+The code, Power BI project and documentation are released under the [MIT License](LICENSE). The source data is **not** covered by it: it belongs to Bogotá's Health Department and is published under CC BY 4.0 (see below).
+
 ## Data source
 
 Secretaría Distrital de Salud de Bogotá (SDS), SIVIM. *Violencia intrafamiliar y de género en Bogotá D.C.* [Dataset], Datos Abiertos Bogotá, [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). <https://datosabiertos.bogota.gov.co/dataset/numero-de-casos-de-violencia-intrafamiliar>

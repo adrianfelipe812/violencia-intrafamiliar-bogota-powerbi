@@ -71,6 +71,10 @@ Al validar encontramos un error de contexto: `ALL(columna)` no quitaba el filtro
 Adrian Felipe Grateron Ramirez, Jhonatan Smith Doncel y Jorge Emmanuel Marin.
 Proyecto integrador del curso Visualización de Datos, Maestría en Ciencia de Datos, Universidad Santo Tomás (2026). Docente: Diana Angélica Pulido López.
 
+## Licencia
+
+El código, el proyecto de Power BI y la documentación de este repositorio están bajo licencia [MIT](LICENSE): puedes reutilizarlos siempre que conserves el aviso de autoría. Los datos de origen **no** están cubiertos por esta licencia: pertenecen a la Secretaría Distrital de Salud y se publican bajo CC BY 4.0 (ver abajo).
+
 ## Fuente de los datos
 
 Secretaría Distrital de Salud de Bogotá (SDS), Subsistema de Vigilancia Epidemiológica de la Violencia Intrafamiliar y de Género (SIVIM). *Violencia intrafamiliar y de género en Bogotá D.C.* [Conjunto de datos], Datos Abiertos Bogotá, licencia [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Fecha del dato: 28/07/2026.
